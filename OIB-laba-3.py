@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives.asymmetric import (rsa, padding as as_paddin
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 import sys
-from PyQt5.QtWidgets import ( QPushButton, QApplication, QMainWindow, QLabel)
+from PyQt5.QtWidgets import ( QPushButton, QApplication, QMainWindow, QLabel, QDesktopWidget, QHBoxLayout, QVBoxLayout)
 from PyQt5.QtGui import (QIcon, QFont)
 from PyQt5 import QtCore
 import os
@@ -30,51 +30,73 @@ class Window(QMainWindow):
 
         self.keys = [i for i in range(5, 17, 1)]
         self.iv = os.urandom(8)
-        self.info_message = QLabel(self)
-        self.info_message.resize(1200, 50)
-        self.info_message.move(0, 70)
-        self.info_message.setFont(QFont('Arial', 14))
-        self.info_message.setAlignment(QtCore.Qt.AlignCenter)
         self.flag = 0
         
+        self.info_message = QLabel(self)
+        self.info_message.resize(1800, 60)
+        self.info_message.move(0, 60)
+        self.info_message.setFont(QFont('Arial', 12))
+        self.info_message.setAlignment(QtCore.Qt.AlignCenter)
+        
+        self.info_text = QLabel(self)
+        self.info_text.resize(1600, 850)
+        self.info_text.move(100, 130)
+        self.info_text.setFont(QFont('Arial', 10))
+        self.info_text.setAlignment(QtCore.Qt.AlignCenter)
+        self.info_text.setWordWrap(True)
+
         self.btn_x_size = 300
         self.btn_y_size = 40
-        self.lust = 140
+        self.luft = 450
         btn_font_main = QFont('Arial', 11)
         btn_StyleSheet_main = 'background-color: #171982; color: #dbdcff; border :1px solid; '
 
         #-------------------------------------------------------------------------------------------------------
         self.btn_gen_keys = QPushButton('Сгенерировать ключи', self)
-        self.btn_gen_keys.setGeometry(self.lust, 0, self.btn_x_size, self.btn_y_size)
+        self.btn_gen_keys.setGeometry(self.luft, 0, self.btn_x_size, self.btn_y_size)
+        #self.btn_gen_keys.resize(self.btn_x_size, self.btn_y_size)
         self.btn_gen_keys.setFont(btn_font_main)
         self.btn_gen_keys.setStyleSheet(btn_StyleSheet_main)
         self.btn_gen_keys.clicked.connect(self.gen_keys)
         #-------------------------------------------------------------------------------------------------------
         self.btn_enc_txt = QPushButton('Зашифровать текст', self)
-        self.btn_enc_txt.setGeometry(self.btn_x_size + self.lust + 5, 0, self.btn_x_size, self.btn_y_size)
+        self.btn_enc_txt.setGeometry(self.btn_x_size + self.luft + 5, 0, self.btn_x_size, self.btn_y_size)
+        #self.btn_enc_txt.resize(self.btn_x_size, self.btn_y_size)
         self.btn_enc_txt.setFont(btn_font_main)
         self.btn_enc_txt.setStyleSheet(btn_StyleSheet_main)
         self.btn_enc_txt.clicked.connect(self.text_encryption)
         #-------------------------------------------------------------------------------------------------------
         self.btn_dec_txt = QPushButton('Дешифровать текст', self)
-        self.btn_dec_txt.setGeometry(2*self.btn_x_size + self.lust + 10, 0, self.btn_x_size, self.btn_y_size)
+        self.btn_dec_txt.setGeometry(2*self.btn_x_size + self.luft + 10, 0, self.btn_x_size, self.btn_y_size)
+        #self.btn_dec_txt.resize(self.btn_x_size, self.btn_y_size)
         self.btn_dec_txt.setFont(btn_font_main)
         self.btn_dec_txt.setStyleSheet(btn_StyleSheet_main)
         self.btn_dec_txt.clicked.connect(self.text_decryption)
         #-------------------------------------------------------------------------------------------------------
-
+        
         #упраление окошком
-        self.setGeometry(50, 50, 1200, 675)
-        self.setWindowTitle('Application programing laba 3')
+        self.resize(1800, 1000)
+        self.center()
+        self.setWindowTitle('OIB laba 3')
         self.setWindowIcon(QIcon('web.png'))
         self.setStyleSheet('background-color: #dbdcff;')
         self.show()
     
-    def print_text(self, text):
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+    
+    def print_info_message(self, text):
         self.info_message.clear()
         self.info_message.setText(text)
         self.info_message.show()
         
+    def print_info_text(self, text):
+        self.info_text.clear()
+        self.info_text.setText(text)
+        self.info_text.show()
     
     def gen_keys(self):
         if (self.flag == 0):
@@ -107,10 +129,12 @@ class Window(QMainWindow):
             with open(self.file_settings['symmetric_key'], 'wb') as key_file:
                 key_file.write(c_key)
             print('\nКлючи сохранены\n')
-            self.print_text('Ключи шифрования сгенерированы и записаны в файлы')
+            self.print_info_message('Ключи шифрования сгенерированы и записаны в файлы')
             self.flag = 1
         else:
-            self.print_text('Ключи уже сгенерированы')
+            self.print_info_message('Ключи уже сгенерированы')
+        self.info_text.clear()
+        self.info_text.show()
             
             
     def sym_key_decryption(self):
@@ -146,10 +170,13 @@ class Window(QMainWindow):
             
             with open(self.file_settings['encrypted_file'], 'wb') as file:
                 file.write(enc_text)
-            self.print_text('Текст зашифрован и записан в файл')
+            self.print_info_message('Текст зашифрован и записан в файл\nИсходный текст:')
             self.flag = 2
+            self.print_info_text(str(enc_text))
         elif (self.flag == 0):
-            self.print_text('Сначала сгенерируйте ключи')
+            self.print_info_message('Сначала сгенерируйте ключи')
+            self.info_text.clear()
+            self.info_text.show()
         
         
     def text_decryption(self):
@@ -172,12 +199,15 @@ class Window(QMainWindow):
             
             with open(self.file_settings['decrypted_file'], 'wb') as file:
                 file.write(enc_text)
-            self.print_text('Текст расшифрован и записан в файл')
+            self.print_info_message('Текст расшифрован и записан в файл\nРасшифрованный текст:')
             self.flag = 0
+            self.print_info_text(unpadded_dc_text)
         elif (self.flag == 0):
-            self.print_text('Сначала сгенерируйте ключи')
+            self.print_info_message('Сначала сгенерируйте ключи')
+            self.info_text.clear()
+            self.info_text.show()
         elif (self.flag == 1):
-            self.print_text('Сначала зашифруйте текст')
+            self.print_info_message('Сначала зашифруйте текст')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv) #объект приложение, должен быть всегда, принимает на вход аргументы командной строки
