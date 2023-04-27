@@ -10,14 +10,12 @@ from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
     QLabel,
-    QDesktopWidget,
-    QHBoxLayout,
-    QVBoxLayout)
+    QDesktopWidget, 
+    QFileDialog)
 from PyQt5.QtGui import (QIcon, QFont)
 from PyQt5 import QtCore
 import os
 import random
-import time
 
 
 class Window(QMainWindow):
@@ -25,85 +23,70 @@ class Window(QMainWindow):
         super().__init__()
         self.initUI()
 
-    def initUI(self):
+    def initUI(self):  
+        # self.init_text = str(QFileDialog.getOpenFileName(self, 'Select file for encrypt', '*.txt'))
+        # self.way = str(QFileDialog.getExistingDirectory(self, 'Select folder for dataset'))
         self.way = os.path.abspath('')
-        self.file_settings = {
-            'initial_file': self.way + '\\' + 'initial_file.txt',
-            'encrypted_file': self.way + '\\' + 'encrypted_file.txt',
-            'decrypted_file': self.way + '\\' + 'decrypted_file.txt',
-            'symmetric_key': self.way + '\\' + 'symmetric_key.txt',
-            'public_key': self.way + '\\' + 'public_key.pem',
-            'private_key': self.way + '\\' + 'private_key.pem',
-        }
-
-        self.keys = [i for i in range(5, 17, 1)]
-        self.iv = os.urandom(8)
-        self.flag = 0
-
+             
         self.info_message = QLabel(self)
-        self.info_message.resize(1800, 60)
-        self.info_message.move(0, 60)
-        self.info_message.setFont(QFont('Arial', 12))
-        self.info_message.setAlignment(QtCore.Qt.AlignCenter)
-
-        self.info_text = QLabel(self)
-        self.info_text.resize(1600, 850)
-        self.info_text.move(100, 130)
-        self.info_text.setFont(QFont('Arial', 10))
-        self.info_text.setAlignment(QtCore.Qt.AlignCenter)
-        self.info_text.setWordWrap(True)
-
-        self.btn_x_size = 300
-        self.btn_y_size = 40
-        self.luft = 450
-        btn_font_main = QFont('Arial', 11)
-        btn_StyleSheet_main = 'background-color: #171982; color: #dbdcff; border :1px solid; '
-
-        # -------------------------------------------------------------------------------------------------------
         self.btn_gen_keys = QPushButton('Сгенерировать ключи', self)
-        self.btn_gen_keys.setGeometry(
-            self.luft, 0, self.btn_x_size, self.btn_y_size)
-        #self.btn_gen_keys.resize(self.btn_x_size, self.btn_y_size)
-        self.btn_gen_keys.setFont(btn_font_main)
-        self.btn_gen_keys.setStyleSheet(btn_StyleSheet_main)
-        self.btn_gen_keys.clicked.connect(self.gen_keys)
-        # -------------------------------------------------------------------------------------------------------
         self.btn_enc_txt = QPushButton('Зашифровать текст', self)
-        self.btn_enc_txt.setGeometry(
-            self.btn_x_size +
-            self.luft +
-            5,
-            0,
-            self.btn_x_size,
-            self.btn_y_size)
-        #self.btn_enc_txt.resize(self.btn_x_size, self.btn_y_size)
-        self.btn_enc_txt.setFont(btn_font_main)
-        self.btn_enc_txt.setStyleSheet(btn_StyleSheet_main)
-        self.btn_enc_txt.clicked.connect(self.text_encryption)
-        # -------------------------------------------------------------------------------------------------------
         self.btn_dec_txt = QPushButton('Дешифровать текст', self)
-        self.btn_dec_txt.setGeometry(
-            2 *
-            self.btn_x_size +
-            self.luft +
-            10,
-            0,
-            self.btn_x_size,
-            self.btn_y_size)
-        #self.btn_dec_txt.resize(self.btn_x_size, self.btn_y_size)
-        self.btn_dec_txt.setFont(btn_font_main)
-        self.btn_dec_txt.setStyleSheet(btn_StyleSheet_main)
-        self.btn_dec_txt.clicked.connect(self.text_decryption)
-        # -------------------------------------------------------------------------------------------------------
+        
+        self.settings()
 
-        # упраление окошком
-        self.resize(1800, 1000)
+        self.setFixedWidth(self.w)
+        self.setFixedHeight(self.h)
         self.center()
         self.setWindowTitle('OIB laba 3')
-        self.setWindowIcon(QIcon('web.png'))
+        self.setWindowIcon(QIcon('icon.png'))
         self.setStyleSheet('background-color: #dbdcff;')
         self.show()
 
+    def settings(self):
+        self.file_settings = {
+            'initial_file': os.path.join(self.way, 'initial_file.txt'),
+            'encrypted_file': os.path.join(self.way, 'encrypted_file.txt'),
+            'decrypted_file': os.path.join(self.way, 'decrypted_file.txt'),
+            'symmetric_key': os.path.join(self.way, 'symmetric_key.txt'),
+            'public_key': os.path.join(self.way, 'public_key.txt'),
+            'private_key': os.path.join(self.way, 'private_key.txt'),
+            'encrypted_vector': os.path.join(self.way, 'encrypted_vector.txt')
+        }
+
+        self.keys = [i for i in range(5, 17, 1)]
+        self.flag = 0
+        
+        self.w = 900
+        self.h = 500
+        self.info_message.resize(self.w, self.h)
+        self.info_message.setFont(QFont('Arial', 12))
+        self.info_message.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.btn_x_size = 300
+        self.btn_y_size = 40
+        self.luft = 0
+        self.btn_font_main = QFont('Arial', 11)
+        self.btn_StyleSheet_main = 'background-color: #171982; color: #dbdcff; border :1px solid;'
+        
+        self.btn_gen_keys.setGeometry(
+            self.luft, 0, self.btn_x_size, self.btn_y_size)
+        self.btn_gen_keys.setFont(self.btn_font_main)
+        self.btn_gen_keys.setStyleSheet(self.btn_StyleSheet_main)
+        self.btn_gen_keys.clicked.connect(self.gen_keys)
+
+        self.btn_enc_txt.setGeometry(self.btn_x_size + self.luft + 5, 0,
+            self.btn_x_size, self.btn_y_size)
+        self.btn_enc_txt.setFont(self.btn_font_main)
+        self.btn_enc_txt.setStyleSheet(self.btn_StyleSheet_main)
+        self.btn_enc_txt.clicked.connect(self.text_encryption)
+        
+        self.btn_dec_txt.setGeometry(2 * self.btn_x_size + self.luft + 10, 0,
+            self.btn_x_size, self.btn_y_size)
+        self.btn_dec_txt.setFont(self.btn_font_main)
+        self.btn_dec_txt.setStyleSheet(self.btn_StyleSheet_main)
+        self.btn_dec_txt.clicked.connect(self.text_decryption)
+        
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -115,34 +98,24 @@ class Window(QMainWindow):
         self.info_message.setText(text)
         self.info_message.show()
 
-    def print_info_text(self, text):
-        self.info_text.clear()
-        self.info_text.setText(text)
-        self.info_text.show()
-
     def gen_keys(self):
         if (self.flag == 0):
             len_key = random.randint(0, len(self.keys) - 1)
-            key = os.urandom(self.keys[len_key])
-            print('\nСгенерирован ключ симетричного шифрования\n')
+            sym_key = os.urandom(self.keys[len_key])
 
             assym_keys = rsa.generate_private_key(
                 public_exponent=65537,
                 key_size=2048
             )
             private_key = assym_keys
-            print('\nСгенерирован закрытый ключ ассиметричного шифрования\n')
             public_key = assym_keys.public_key()
-            print('\nСгенерирован открытый ключ ассиметричного шифрования\n')
 
             c_key = public_key.encrypt(
-                key,
+                sym_key,
                 as_padding.OAEP(
-                    mgf=as_padding.MGF1(
-                        algorithm=hashes.SHA256()),
+                    mgf=as_padding.MGF1(algorithm=hashes.SHA256()),
                     algorithm=hashes.SHA256(),
                     label=None))
-            print('\nКлюч симметричного шифрования зашифрован\n')
 
             with open(self.file_settings['public_key'], 'wb') as public_out:
                 public_out.write(
@@ -159,14 +132,16 @@ class Window(QMainWindow):
 
             with open(self.file_settings['symmetric_key'], 'wb') as key_file:
                 key_file.write(c_key)
-            print('\nКлючи сохранены\n')
+                
+            iv = os.urandom(8)
+            with open(self.file_settings['encrypted_vector'], 'wb') as enc_vec:
+                enc_vec.write(iv)
+                
             self.print_info_message(
                 'Ключи шифрования сгенерированы и записаны в файлы')
             self.flag = 1
         else:
             self.print_info_message('Ключи уже сгенерированы')
-        self.info_text.clear()
-        self.info_text.show()
 
     def sym_key_decryption(self):
         with open(self.file_settings['private_key'], 'rb') as file:
@@ -179,8 +154,7 @@ class Window(QMainWindow):
         dec_sym_key = d_private_key.decrypt(
             sym_key,
             as_padding.OAEP(
-                mgf=as_padding.MGF1(
-                    algorithm=hashes.SHA256()),
+                mgf=as_padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
                 label=None))
 
@@ -190,40 +164,38 @@ class Window(QMainWindow):
         if(self.flag == 1 or self.flag == 2):
             with open(self.file_settings['initial_file'], 'r', encoding='UTF-8') as file:
                 text = file.read()
-            print('Исходный текст:\n', text)
+                
+            with open(self.file_settings['encrypted_vector'], 'rb') as file:
+                iv = file.read()
 
             dec_sym_key = self.sym_key_decryption()
-            print('\nКлюч для шифрования получен\n')
 
             padder = sym_padding.ANSIX923(32).padder()
             padded_text = padder.update(
                 bytes(text, 'UTF-8')) + padder.finalize()
 
-            cipher = Cipher(algorithms.CAST5(dec_sym_key), modes.CBC(self.iv))
+            cipher = Cipher(algorithms.CAST5(dec_sym_key), modes.CBC(iv))
             encryptor = cipher.encryptor()
             enc_text = encryptor.update(padded_text) + encryptor.finalize()
-
-            print('\nЗашифрованный текст\n', enc_text)
 
             with open(self.file_settings['encrypted_file'], 'wb') as file:
                 file.write(enc_text)
             self.print_info_message(
-                'Текст зашифрован и записан в файл\nИсходный текст:')
+                'Текст зашифрован и записан в файл')
             self.flag = 2
-            self.print_info_text(str(enc_text))
         elif (self.flag == 0):
             self.print_info_message('Сначала сгенерируйте ключи')
-            self.info_text.clear()
-            self.info_text.show()
 
     def text_decryption(self):
         if(self.flag == 2):
             with open(self.file_settings['encrypted_file'], 'rb') as file:
                 enc_text = file.read()
+                
+            with open(self.file_settings['encrypted_vector'], 'rb') as file:
+                iv = file.read()
 
             dec_sym_key = self.sym_key_decryption()
-            print('\nКлюч для дешифрки получен\n')
-            cipher = Cipher(algorithms.CAST5(dec_sym_key), modes.CBC(self.iv))
+            cipher = Cipher(algorithms.CAST5(dec_sym_key), modes.CBC(iv))
 
             decryptor = cipher.decryptor()
             dc_text = decryptor.update(enc_text) + decryptor.finalize()
@@ -232,18 +204,13 @@ class Window(QMainWindow):
             unpadded_dc_text = unpadder.update(dc_text) + unpadder.finalize()
             unpadded_dc_text = unpadded_dc_text.decode('UTF-8')
 
-            print('\nРасшифрованный текст\n', unpadded_dc_text)
-
-            with open(self.file_settings['decrypted_file'], 'wb') as file:
-                file.write(enc_text)
+            with open(self.file_settings['decrypted_file'], 'w') as file:
+                file.write(unpadded_dc_text)
             self.print_info_message(
-                'Текст расшифрован и записан в файл\nРасшифрованный текст:')
+                'Текст расшифрован и записан в файл')
             self.flag = 0
-            self.print_info_text(unpadded_dc_text)
         elif (self.flag == 0):
             self.print_info_message('Сначала сгенерируйте ключи')
-            self.info_text.clear()
-            self.info_text.show()
         elif (self.flag == 1):
             self.print_info_message('Сначала зашифруйте текст')
 
