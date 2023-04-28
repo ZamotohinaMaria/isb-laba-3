@@ -6,13 +6,25 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 import os
 import random
+from enum import Enum
+
+
+class Flag(Enum):
+    file_error_text = 1
+    file_error_enc_text = 2
+    file_error_keys = 3
+    file_error_enc_vec = 4
+    file_good = 0
+
 
 class encryptor():
-    def __init__(self):
+    def __init__(self) -> None:
+        """функция инициаизации
+        """
         # self.init_text = str(QFileDialog.getOpenFileName(self, 'Select file for encrypt', '*.txt'))
         # self.way = str(QFileDialog.getExistingDirectory(self, 'Select folder for dataset'))
         self.way = os.path.abspath('')
-        
+        self.flag = Flag
         self.file_settings = {
             'initial_file': os.path.join(self.way, 'initial_file.txt'),
             'encrypted_file': os.path.join(self.way, 'encrypted_file.txt'),
@@ -25,7 +37,12 @@ class encryptor():
 
         self.keys = [i for i in range(5, 17, 1)]
 
-    def gen_keys(self):
+    def gen_keys(self) -> Flag:
+        """функция генерации ключей для симмтричного и асиметричного шифрования
+
+        Returns:
+            Flag: индикатор работы с файлами
+        """
         len_key = random.randint(0, len(self.keys) - 1)
         sym_key = os.urandom(self.keys[len_key])
 
@@ -58,18 +75,34 @@ class encryptor():
 
         with open(self.file_settings['symmetric_key'], 'wb') as key_file:
             key_file.write(c_key)
-            
+
         iv = os.urandom(8)
         with open(self.file_settings['encrypted_vector'], 'wb') as enc_vec:
             enc_vec.write(iv)
 
-    def sym_key_decryption(self):
-        with open(self.file_settings['private_key'], 'rb') as file:
-            private_bytes = file.read()
+        return self.flag.file_good.value
+
+    def sym_key_decryption(self) -> bytes or Flag:
+        """функция доступа и расшифровки ключа симметричного шифрования
+
+        Returns:
+            bytes | Flag: при удачной работе с файлами возврщает ключ
+            симметричного шифрования
+            при ошибке возвращает индиктар ошибки
+        """
+        if (os.path.isfile(self.file_settings['private_key']) == False):
+            return self.flag.file_error_keys.value
+        else:
+            with open(self.file_settings['private_key'], 'rb') as file:
+                private_bytes = file.read()
+
         d_private_key = load_pem_private_key(private_bytes, password=None,)
 
-        with open(self.file_settings['symmetric_key'], 'rb') as file:
-            sym_key = file.read()
+        if (os.path.isfile(self.file_settings['symmetric_key']) == False):
+            return self.flag.file_error_keys.value
+        else:
+            with open(self.file_settings['symmetric_key'], 'rb') as file:
+                sym_key = file.read()
 
         dec_sym_key = d_private_key.decrypt(
             sym_key,
@@ -80,14 +113,28 @@ class encryptor():
 
         return dec_sym_key
 
-    def text_encryption(self):
-        with open(self.file_settings['initial_file'], 'r', encoding='UTF-8') as file:
-            text = file.read()
-            
-        with open(self.file_settings['encrypted_vector'], 'rb') as file:
-            iv = file.read()
+    def text_encryption(self) -> Flag:
+        """функция зашифровки текста алгоритмом CAST5
 
-        dec_sym_key = self.sym_key_decryption()
+        Returns:
+            Flag: индикатор работы с файлами
+        """
+        if (os.path.isfile(self.file_settings['initial_file']) == False):
+            return self.flag.file_error_text.value
+        else:
+            with open(self.file_settings['initial_file'], 'r', encoding='UTF-8') as file:
+                text = file.read()
+
+        if (os.path.isfile(self.file_settings['encrypted_vector']) == False):
+            return self.flag.file_error_enc_vec.value
+        else:
+            with open(self.file_settings['encrypted_vector'], 'rb') as file:
+                iv = file.read()
+
+        if (self.sym_key_decryption() == 3):
+            return self.flag.file_error_keys.value
+        else:
+            dec_sym_key = self.sym_key_decryption()
 
         padder = sym_padding.ANSIX923(32).padder()
         padded_text = padder.update(
@@ -100,14 +147,31 @@ class encryptor():
         with open(self.file_settings['encrypted_file'], 'wb') as file:
             file.write(enc_text)
 
-    def text_decryption(self):
-        with open(self.file_settings['encrypted_file'], 'rb') as file:
-            enc_text = file.read()
-            
-        with open(self.file_settings['encrypted_vector'], 'rb') as file:
-            iv = file.read()
+        return self.flag.file_good.value
 
-        dec_sym_key = self.sym_key_decryption()
+    def text_decryption(self) -> Flag:
+        """функция расшифровки текста алгоритмом CAST5
+
+        Returns:
+            Flag: индикатор работы с файлами
+        """
+        if (os.path.isfile(self.file_settings['encrypted_file']) == False):
+            return self.flag.file_error_enc_text.value
+        else:
+            with open(self.file_settings['encrypted_file'], 'rb') as file:
+                enc_text = file.read()
+
+        if (os.path.isfile(self.file_settings['encrypted_vector']) == False):
+            return self.flag.file_error_enc_vec.value
+        else:
+            with open(self.file_settings['encrypted_vector'], 'rb') as file:
+                iv = file.read()
+
+        if (self.sym_key_decryption() == 3):
+            return self.flag.file_error_keys.value
+        else:
+            dec_sym_key = self.sym_key_decryption()
+
         cipher = Cipher(algorithms.CAST5(dec_sym_key), modes.CBC(iv))
 
         decryptor = cipher.decryptor()
@@ -119,3 +183,5 @@ class encryptor():
 
         with open(self.file_settings['decrypted_file'], 'w') as file:
             file.write(unpadded_dc_text)
+
+        return self.flag.file_good.value
