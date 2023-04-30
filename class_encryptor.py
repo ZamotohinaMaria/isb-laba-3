@@ -4,10 +4,11 @@ from cryptography.hazmat.primitives.asymmetric import (
     rsa, padding as as_padding)
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from PyQt5.QtWidgets import (QMainWindow, QFileDialog)
 import os
 import random
 from enum import Enum
-
+        
 
 class Flag(Enum):
     file_error_text = 1
@@ -17,12 +18,11 @@ class Flag(Enum):
     file_good = 0
 
 
-class encryptor():
+class Encryptor():
     def __init__(self) -> None:
-        """функция инициаизации
+        """функция инициализации
         """
-        # self.init_text = str(QFileDialog.getOpenFileName(self, 'Select file for encrypt', '*.txt'))
-        # self.way = str(QFileDialog.getExistingDirectory(self, 'Select folder for dataset'))
+        self.way_init_text = ''
         self.way = os.path.abspath('')
         self.flag = Flag
         self.file_settings = {
@@ -37,6 +37,13 @@ class encryptor():
 
         self.keys = [i for i in range(5, 17, 1)]
 
+    def select_way_to_init_text(self) -> None:
+        self.way_init_text = str(QFileDialog.getOpenFileName(caption='Select file for encrypt', filter='*.txt'))
+        self.way_init_text = self.way_init_text.split('\'')[1]
+        
+    def select_floder(self) -> None:
+        self.way = str(QFileDialog.getExistingDirectory(caption='Select folder for dataset'))
+        
     def gen_keys(self) -> Flag:
         """функция генерации ключей для симмтричного и асиметричного шифрования
 

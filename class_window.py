@@ -5,8 +5,10 @@ from PyQt5.QtWidgets import (
     QDesktopWidget)
 from PyQt5.QtGui import (QIcon, QFont)
 from PyQt5 import QtCore
-from class_encryptor import encryptor as enc
+from class_encryptor import Encryptor as enc
+from enum import Enum
 
+flag = 0
 
 class Window(QMainWindow):
     def __init__(self) -> None:
@@ -18,14 +20,22 @@ class Window(QMainWindow):
     def initUI(self) -> None:
         """функция работы окна
         """
-        self.enc = enc()
+        self.enc = enc()     
         self.info_message = QLabel(self)
         self.btn_gen_keys = QPushButton('Сгенерировать ключи', self)
         self.btn_enc_txt = QPushButton('Зашифровать текст', self)
         self.btn_dec_txt = QPushButton('Дешифровать текст', self)
+        self.btn_file_select = QPushButton('Выберите файл \nдля шифрования', self)
+        self.btn_floder_select = QPushButton('Выберите папку \nдля сохранения файлов', self)
 
         self.settings()
-
+        if (flag == 0):
+            self.select_ways()
+        
+        # self.btn_gen_keys.close()
+        # self.btn_enc_txt.close()
+        # self.btn_dec_txt.close()
+        
         self.setFixedWidth(self.w)
         self.setFixedHeight(self.h)
         self.center()
@@ -48,6 +58,17 @@ class Window(QMainWindow):
         self.luft = 0
         self.btn_font_main = QFont('Arial', 11)
         self.btn_StyleSheet_main = 'background-color: #171982; color: #dbdcff; border :1px solid;'
+
+        self.btn_file_select.setGeometry(148, 200, self.btn_x_size, 2 * self.btn_y_size)
+        self.btn_file_select.setFont(self.btn_font_main)
+        self.btn_file_select.setStyleSheet(self.btn_StyleSheet_main)
+        self.btn_file_select.clicked.connect(self.select_way_to_init_text)
+        
+        self.btn_floder_select.setGeometry(self.btn_x_size + 148 + 5, 200,
+                                     self.btn_x_size, 2 * self.btn_y_size)
+        self.btn_floder_select.setFont(self.btn_font_main)
+        self.btn_floder_select.setStyleSheet(self.btn_StyleSheet_main)
+        self.btn_floder_select.clicked.connect(self.select_floder)
 
         self.btn_gen_keys.setGeometry(
             self.luft, 0, self.btn_x_size, self.btn_y_size)
@@ -75,6 +96,12 @@ class Window(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+    def select_ways(self) -> None:
+        self.btn_gen_keys.close()
+        self.btn_enc_txt.close()
+        self.btn_dec_txt.close()
+        flag = 1
+
     def print_info_message(self, text: str) -> None:
         """функция вывода информации об этапах работы программы
         и ошибках
@@ -86,11 +113,16 @@ class Window(QMainWindow):
         self.info_message.setText(text)
         self.info_message.show()
 
+    def select_way_to_init_text(self) -> None:
+        self.enc.select_way_to_init_text()
+        
+    def select_floder(self) -> None:
+        self.enc.select_floder()
+
     def gen_keys(self) -> None:
         """функция работы кнопки для генерации ключей
         """
         flag = self.enc.gen_keys()
-        print(flag)
         if (flag == 0):
             self.print_info_message(
                 'Ключи шифрования сгенерированы и записаны в файлы')
