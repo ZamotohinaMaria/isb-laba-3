@@ -25,16 +25,8 @@ class Window(QMainWindow):
         self.btn_gen_keys = QPushButton('Сгенерировать ключи', self)
         self.btn_enc_txt = QPushButton('Зашифровать текст', self)
         self.btn_dec_txt = QPushButton('Дешифровать текст', self)
-        self.btn_file_select = QPushButton('Выберите файл \nдля шифрования', self)
-        self.btn_floder_select = QPushButton('Выберите папку \nдля сохранения файлов', self)
 
         self.settings()
-        if (flag == 0):
-            self.select_ways()
-        
-        # self.btn_gen_keys.close()
-        # self.btn_enc_txt.close()
-        # self.btn_dec_txt.close()
         
         self.setFixedWidth(self.w)
         self.setFixedHeight(self.h)
@@ -58,17 +50,6 @@ class Window(QMainWindow):
         self.luft = 0
         self.btn_font_main = QFont('Arial', 11)
         self.btn_StyleSheet_main = 'background-color: #171982; color: #dbdcff; border :1px solid;'
-
-        self.btn_file_select.setGeometry(148, 200, self.btn_x_size, 2 * self.btn_y_size)
-        self.btn_file_select.setFont(self.btn_font_main)
-        self.btn_file_select.setStyleSheet(self.btn_StyleSheet_main)
-        self.btn_file_select.clicked.connect(self.select_way_to_init_text)
-        
-        self.btn_floder_select.setGeometry(self.btn_x_size + 148 + 5, 200,
-                                     self.btn_x_size, 2 * self.btn_y_size)
-        self.btn_floder_select.setFont(self.btn_font_main)
-        self.btn_floder_select.setStyleSheet(self.btn_StyleSheet_main)
-        self.btn_floder_select.clicked.connect(self.select_floder)
 
         self.btn_gen_keys.setGeometry(
             self.luft, 0, self.btn_x_size, self.btn_y_size)
@@ -96,12 +77,6 @@ class Window(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def select_ways(self) -> None:
-        self.btn_gen_keys.close()
-        self.btn_enc_txt.close()
-        self.btn_dec_txt.close()
-        flag = 1
-
     def print_info_message(self, text: str) -> None:
         """функция вывода информации об этапах работы программы
         и ошибках
@@ -112,12 +87,6 @@ class Window(QMainWindow):
         self.info_message.clear()
         self.info_message.setText(text)
         self.info_message.show()
-
-    def select_way_to_init_text(self) -> None:
-        self.enc.select_way_to_init_text()
-        
-    def select_floder(self) -> None:
-        self.enc.select_floder()
 
     def gen_keys(self) -> None:
         """функция работы кнопки для генерации ключей
